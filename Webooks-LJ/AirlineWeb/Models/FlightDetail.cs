@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AirlineWeb.Models;
 
-public class FlightDetails
+public class FlightDetail
 {
     [Key]
     [Required]
