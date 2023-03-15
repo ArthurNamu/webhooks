@@ -1,5 +1,6 @@
 ﻿using AirlineWeb.Data;
 using AirlineWeb.Dtos;
+using AirlineWeb.MessageBus;
 using AirlineWeb.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,13 @@ namespace AirlineWeb.Controllers
     {
         private readonly AirlineDbContext _context;
         private readonly IMapper _mapper;
-        public FlightsController(AirlineDbContext context, IMapper mapper)
+        private readonly IMessageBusClient _messageBusClient;
+
+        public FlightsController(AirlineDbContext context, IMapper mapper, IMessageBusClient messageBusClient)
         {
             _context = context;
             _mapper = mapper;
+            _messageBusClient = messageBusClient;
         }
         [HttpGet("{flightCode}", Name = "GetFlightDetailsByCode")]
         public ActionResult<FlightDetailReadDto> GetFlightDetailsByCode(string flightCode)
@@ -66,13 +70,35 @@ namespace AirlineWeb.Controllers
                 return NotFound();
             }
 
-
+            decimal oldPrice = flight.Price;
 
             _mapper.Map(flightDetailUpdateDto, flight);
 
-            _context.SaveChanges();
-
-            return NoContent();
+            try
+            {
+                _context.SaveChanges();
+                if(oldPrice != flight.Price)
+                {
+                    Console.WriteLine("Price changed - place message on bus");
+                    var message = new NotificationMessageDto
+                    {
+                        WebhookType = "Price Changed",
+                        NewPrice = flight.Price,
+                        OldPrice = oldPrice,
+                        FlightCode = flight.FlightCode
+                    };
+                    _messageBusClient.SendMessage(message);
+                }
+                else
+                {
+                    Console.WriteLine("No Price Change");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

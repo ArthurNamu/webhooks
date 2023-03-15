@@ -20,4 +20,8 @@
     <PackageReference Include="rabbitmq.client" Version="6.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Dtos\" />
+  </ItemGroup>
+
 </Project>
