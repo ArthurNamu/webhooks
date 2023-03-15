@@ -1,4 +1,5 @@
 using AirlineWeb.Data;
+using AirlineWeb.MessageBus;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,8 @@ var Configuration = builder.Configuration;
 // Add services to the container.
 builder.Services.AddDbContext<AirlineDbContext>(opt => 
 opt.UseSqlServer(Configuration.GetConnectionString("AirlineConnection")));
+
+builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();  
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

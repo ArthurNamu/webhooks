@@ -65,6 +65,9 @@ namespace AirlineWeb.Controllers
             {
                 return NotFound();
             }
+
+
+
             _mapper.Map(flightDetailUpdateDto, flight);
 
             _context.SaveChanges();
